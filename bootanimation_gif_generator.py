@@ -2,6 +2,7 @@ import glob
 import imageio
 
 BOOTANIMATION_PATH = "./bootanimation"
+INFINITE_LOOP_LIMIT = 3
 
 class BootAnimationPart:
     def __init__(self, name, repeat, pause, path):
@@ -17,7 +18,8 @@ parts = []
 for line in desc_txt:
     split = line.replace('\n', '').split(' ')
     try:
-        parts.append(BootAnimationPart(split[0], split[1], split[2], split[3]))
+        if len(split) > 1:
+            parts.append(BootAnimationPart(split[0], split[1], split[2], split[3]))
     except IndexError:
         print("Invalid file desc.txt.")
         quit()
@@ -25,13 +27,18 @@ for line in desc_txt:
 
 images = []
 for part in parts:
-    filepath = sorted(glob.glob(f'{BOOTANIMATION_PATH}/{part.path}/*.png'))
-    for repeat in range(0, part.repeat+1):
-        for file_i in range(len(filepath)):
-            images.append(imageio.imread(filepath[file_i]))
-            if (file_i == len(filepath)-1):
+    files = sorted(glob.glob(f'{BOOTANIMATION_PATH}/{part.path}/*.png'))
+    if part.repeat != 0:
+        part_repeat = part.repeat
+    else:
+        part_repeat = INFINITE_LOOP_LIMIT
+
+    for repeat in range(0, part_repeat+1):
+        for file_i in range(len(files)):
+            images.append(imageio.imread(files[file_i]))
+            if (file_i == len(files)-1):
                 for delay in range(0, part.pause):
-                    images.append(imageio.imread(filepath[file_i]))
+                    images.append(imageio.imread(files[file_i]))
 
 
 fpsList = [desc_fps]
